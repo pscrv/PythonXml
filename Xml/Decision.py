@@ -15,7 +15,8 @@ class Decision :
 
     def GetTag ( self, tag: str ) :
         self._makeSoupIfNeeded()
-        return self._soup.find( tag ).text
+        tag = self._soup.find( tag )
+        return '' if tag is None else tag.text
 
     def AddTag ( self, tagName : str, tagContent : str ) :
         self._soup = None

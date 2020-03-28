@@ -1,12 +1,17 @@
-from Monads.Mlist import Mlist
+from pathlib import Path
+
+from Xml.XmlAccess import Accessor
 
 
-def f ( x ) : return Mlist( [ y * y for y in x ] )
+path = Path( __file__ ).parent / 'Data'
+fileName = 'sample.txt'
 
+accessor = Accessor( path / fileName )
+count = accessor.CountIfTagContains( 'csn', 'T' )
+decisions = accessor.GetIfTagContains( 'csn', 'W' )
 
-def g ( x ) : return x + x
+print ( 'Decisions with W:')
+for decision in decisions :
+   print( decision.GetTag( 'ap' ) )
 
-
-l = Mlist( [ 1, 2, 3 ] )
-
-(lambda x : print( x, end=' ' )) * (g * l >> f)
+print ( f'Count of decisions with T: {count}')
