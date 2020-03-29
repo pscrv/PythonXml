@@ -1,6 +1,10 @@
 from bs4 import BeautifulSoup
 
 
+Tags = [ 'AP', 'ART', 'BOA', 'CLR', 'CSN', 'CWD', 'DCI', 'DIS', 'FSU', 'HDN', 'HDW', 'IC', 'KEY', 'OFJ', 'OPP', 'ORD',
+           'PA', 'PD', 'PRL', 'RDE', 'REM', 'RES', 'TI' ]
+
+
 class Decision :
 
     def __init__ ( self, raw: str ) :

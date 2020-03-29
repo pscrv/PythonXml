@@ -45,8 +45,6 @@ class _listResult( _searchResult ) :
 
 class Accessor :
 
-
-
     def __init__ ( self, filePath: PathLike ) :
         self._filePath = filePath
 

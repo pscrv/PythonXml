@@ -2,17 +2,15 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 from FileHandler import FileReader
+from Xml.Decision import Tags
 
 
 
 class DecisionsAnalyser:
-    
-    __tags = [ 'AP', 'ART', 'BOA', 'CLR', 'CSN', 'CWD', 'DCI', 'DIS', 'FSU', 'HDN', 'HDW', 'IC', 'KEY', 'OFJ', 'OPP', 'ORD', 'PA', 'PD', 'PRL', 'RDE', 'REM', 'RES', 'TI' ]
-  
+
     @staticmethod
     def _IsValidTag( tag : str ):
-        return tag in DecisionsAnalyser.__tags
-        
+        return tag in Tags
 
 
     def __init__ ( self, path : Path, filename : str ):
@@ -31,14 +29,15 @@ class DecisionsAnalyser:
             if needle in decisionTag.text:
                 return decision
         return None
-        
+
+
     def _findAll ( self, needle : str, tag : str, reader : FileReader ):
         if not DecisionsAnalyser._IsValidTag ( tag ):
             return
 
         while True:
             result = self._findNext ( needle, tag, reader )
-            if not result : 
+            if result is None :
                 break
             yield result
         
