@@ -1,12 +1,13 @@
 from os import PathLike
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 
 from Xml.Decision import Decision
+from Xml.Predicates import _searchPredicate
 from Xml.XmlHandler import FileReader
 
 
 
-class _searchResult( ABC ) :
+class _searchAccumulator( ABC ) :
 
         @abstractmethod
         def Add ( self, decision: Decision ) : ...
@@ -16,7 +17,7 @@ class _searchResult( ABC ) :
         def Result ( self ) : ...
 
 
-class _countResult( _searchResult ) :
+class _countAccumulator( _searchAccumulator ) :
 
     def __init__ ( self ) :
         self._result = 0
@@ -29,7 +30,7 @@ class _countResult( _searchResult ) :
         return self._result
 
 
-class _listResult( _searchResult ) :
+class _listAccumulator( _searchAccumulator ) :
 
         def __init__ ( self ) :
             self._result = [ ]
@@ -42,23 +43,24 @@ class _listResult( _searchResult ) :
             return self._result
 
 
-
 class Accessor :
 
     def __init__ ( self, filePath: PathLike ) :
         self._filePath = filePath
 
-    def CountIfTagContains ( self, tag: str, needle: str ) :
-        return self._accumulateIfTagContains( tag, needle, _countResult() )
 
-    def GetIfTagContains ( self, tag: str, needle: str ) :
-        return self._accumulateIfTagContains( tag, needle, _listResult() )
+    def CountSearch ( self, predicate : _searchPredicate ) :
+        return self._predicateSearch( predicate, _countAccumulator() )
 
-    def _accumulateIfTagContains ( self, tag: str, needle: str, result : _searchResult ) :
+    def ListSearch ( self, predicate : _searchPredicate ) :
+        return self._predicateSearch( predicate, _listAccumulator() )
+
+    def _predicateSearch ( self, _predicate : _searchPredicate, result : _searchAccumulator ) :
         with FileReader( self._filePath ) as reader :
             for decision in reader.IterateFromTo( '<Decision>', '</Decision>' ) :
-                tagText = decision.GetTag( tag )
-                if needle in tagText :
+                if _predicate.Evaluate ( decision ) :
                     result.Add( decision )
-        return result.Result
+            return result.Result
+
+
 
