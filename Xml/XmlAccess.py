@@ -2,7 +2,7 @@ from os import PathLike
 from abc import ABC, abstractmethod
 
 from Xml.Decision import Decision
-from Xml.Predicates import _searchPredicate
+from Xml.Predicates import SearchPredicate
 from Xml.XmlHandler import FileReader
 
 
@@ -49,13 +49,13 @@ class Accessor :
         self._filePath = filePath
 
 
-    def CountSearch ( self, predicate : _searchPredicate ) :
+    def CountSearch ( self, predicate : SearchPredicate ) :
         return self._predicateSearch( predicate, _countAccumulator() )
 
-    def ListSearch ( self, predicate : _searchPredicate ) :
+    def ListSearch ( self, predicate : SearchPredicate ) :
         return self._predicateSearch( predicate, _listAccumulator() )
 
-    def _predicateSearch ( self, _predicate : _searchPredicate, result : _searchAccumulator ) :
+    def _predicateSearch ( self, _predicate : SearchPredicate, result : _searchAccumulator ) :
         with FileReader( self._filePath ) as reader :
             for decision in reader.IterateFromTo( '<Decision>', '</Decision>' ) :
                 if _predicate.Evaluate ( decision ) :

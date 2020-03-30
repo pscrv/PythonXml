@@ -3,28 +3,18 @@ from abc import ABC, abstractmethod
 from Xml.Decision import Decision
 
 
-class _searchPredicate ( ABC ) :
+class SearchPredicate ( ABC ) :
 
     @abstractmethod
     def Evaluate ( self, decision : Decision ) -> bool : ...
 
 
-class TagContains ( _searchPredicate ) :
-
-    def __init__( self, tag : str, needle : str ) :
-        self._tag = tag
-        self._needle = needle
-
-    def Evaluate ( self, decision: Decision ) -> bool :
-        return self._needle in decision.GetTag( self._tag )
-
-
-class PredicateList ( _searchPredicate ) :
+class PredicateList ( SearchPredicate ) :
 
     def __init__( self ) :
         self._predicateList = set()
 
-    def Add (self, predicate : _searchPredicate ) :
+    def Add ( self, predicate : SearchPredicate ) :
         self._predicateList.add( predicate )
         return self
 
@@ -33,12 +23,12 @@ class PredicateList ( _searchPredicate ) :
         return all( resultList )
 
 
-class Combiner ( _searchPredicate ) :
+class Combiner ( SearchPredicate ) :
 
     @abstractmethod
     def _combine ( self, first : bool, second : bool ) -> bool : ...
 
-    def __init__( self, first : _searchPredicate, second : _searchPredicate ) :
+    def __init__( self, first : SearchPredicate, second : SearchPredicate ) :
         self._first = first
         self._second = second
 
@@ -58,10 +48,20 @@ class Or ( Combiner ) :
         return first or second
 
 
-class Not ( _searchPredicate ) :
+class Not ( SearchPredicate ) :
 
-    def __init__( self, predicate : _searchPredicate ):
+    def __init__( self, predicate : SearchPredicate ):
         self._predicate = predicate
 
     def Evaluate( self, decision : Decision ) -> bool:
         return not self._predicate.Evaluate( decision )
+
+
+class TagContains ( SearchPredicate ) :
+
+    def __init__( self, tag : str, needle : str ) :
+        self._tag = tag
+        self._needle = needle
+
+    def Evaluate ( self, decision: Decision ) -> bool :
+        return self._needle in decision.GetTag( self._tag )
