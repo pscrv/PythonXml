@@ -1,5 +1,5 @@
 from abc import ABC
-from os import PathLike
+from pathlib import Path
 from typing import TextIO
 
 from Xml.Decision import Decision
@@ -30,12 +30,14 @@ def WriteDecision ( decision: Decision, file: TextIO ) :
 
 class FileHandler( ABC ) :
 
-    def __init__ ( self, file: PathLike, mode: str, encoding: str ) :
+    def __init__ ( self, file: Path, mode: str, encoding: str ) :
+        from os import PathLike
         self._file = file
         self._mode = mode
         self._encoding = encoding
 
     def __enter__ ( self ) :
+        # noinspection PyTypeChecker
         self._handle = open( self._file, self._mode, encoding=self._encoding )
 
     def __exit__ ( self, exceptionType, exceptionValue, exceptionTraceback ) :

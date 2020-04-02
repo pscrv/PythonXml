@@ -1,17 +1,27 @@
 from pathlib import Path
 
 from Xml.XmlAccess import Accessor
+from Xml.Predicates import *
+from Xml.Languages import *
 
 
 path = Path( __file__ ).parent / 'Data'
 fileName = 'sample.txt'
 
 accessor = Accessor( path / fileName )
-count = accessor.CountIfTagContains( 'csn', 'T' )
-decisions = accessor.GetIfTagContains( 'csn', 'W' )
 
-print ( 'Decisions with W:')
-for decision in decisions :
-   print( decision.GetTag( 'ap' ) )
 
-print ( f'Count of decisions with T: {count}')
+tCasePredicate = TagRegex( 'csn', 'T\d{4}/\d{2}' )
+unknownLanguagePredicate = Not( Or( IsEnglish(), Or( IsFrench(), IsGerman() ) ) )
+
+
+predicate = tCasePredicate
+
+result = accessor.MatchesAndMismatchesCount( predicate )
+print( result )
+
+result = accessor.MatchesAndMismatchesIterator( { 'en': IsEnglish(), 'fr': IsFrench(), 'de': IsGerman(), 'T' : tCasePredicate } )
+for x in result :
+    for (label, decision) in x.items() :
+        print( f'{label}:    {decision.GetTag( "csn" )}' )
+

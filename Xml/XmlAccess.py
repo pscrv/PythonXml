@@ -85,22 +85,22 @@ class _matchAndMismatchListAccumulator( _searchAccumulator ) :
         return { 'Match' : self._matchResult, 'Mismatch' : self._mismatchResult }
 
 
-
 class Accessor :
 
     def __init__ ( self, filePath: PathLike ) :
         self._filePath = filePath
 
-    def CountMatches ( self, predicate: SearchPredicate ) :
+    def MatchesCount ( self, predicate: SearchPredicate ) :
         return self._search( _countAccumulator( predicate ) )
 
-    def CountMatchesAndMismatches ( self, predicate : SearchPredicate ) :
-        return self._search( _matchAndMismatchCountAccumulator( predicate ))
+    def MatchesAndMismatchesCount ( self, predicate: SearchPredicate ) :
+        return self._search( _matchAndMismatchCountAccumulator( predicate ) )
 
-    def ListMatches ( self, predicate: SearchPredicate ) :
+    def MatchesList ( self, predicate: SearchPredicate ) :
         return self._search( _listAccumulator( predicate ) )
 
-    def ListMatchesAndMismatches ( self, predicate : SearchPredicate ) :
+
+    def MatchesAndMismatchesList ( self, predicate: SearchPredicate ) :
         return self._search( _matchAndMismatchListAccumulator( predicate ) )
 
     def _search ( self, result: _searchAccumulator ) :
@@ -108,3 +108,36 @@ class Accessor :
             for decision in reader.IterateFromTo( '<Decision>', '</Decision>' ) :
                 result.Add( decision )
             return result.Result
+
+
+    def MatchesIterator ( self, predicate: SearchPredicate ) :
+        return self._searchIterator( predicate )
+
+
+    def _searchIterator ( self, predicate : SearchPredicate ) :
+        with FileReader( self._filePath ) as reader :
+            for decision in reader.IterateFromTo( '<Decision>', '</Decision>' ) :
+                if predicate.Evaluate( decision ) :
+
+                    yield decision
+
+
+    from typing import Dict
+    def MatchesAndMismatchesIterator ( self, predicateDict: Dict[str, SearchPredicate] ) :
+        return self._searchIterator2( predicateDict )
+
+    def _searchIterator2 ( self, predicateDict: Dict[ str, SearchPredicate] ) :
+        with FileReader( self._filePath ) as reader :
+            for decision in reader.IterateFromTo( '<Decision>', '</Decision>' ) :
+                result = { }
+                for ( label, predicate ) in predicateDict.items() :
+                    if predicate.Evaluate( decision ) :
+                        result[label] = decision
+                yield result
+
+
+
+
+
+
+
