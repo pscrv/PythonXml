@@ -1,6 +1,5 @@
-from abc import ABC, abstractmethod
 import re
-
+from abc import ABC, abstractmethod
 
 from Xml.Decision import Decision
 

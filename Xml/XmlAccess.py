@@ -1,5 +1,6 @@
-from os import PathLike
 from abc import ABC, abstractmethod
+from typing import Dict
+from pathlib import Path
 
 from Xml.Decision import Decision
 from Xml.Predicates import SearchPredicate
@@ -87,7 +88,7 @@ class _matchAndMismatchListAccumulator( _searchAccumulator ) :
 
 class Accessor :
 
-    def __init__ ( self, filePath: PathLike ) :
+    def __init__ ( self, filePath: Path ) :
         self._filePath = filePath
 
     def MatchesCount ( self, predicate: SearchPredicate ) :
@@ -122,8 +123,7 @@ class Accessor :
                     yield decision
 
 
-    from typing import Dict
-    def MatchesAndMismatchesIterator ( self, predicateDict: Dict[str, SearchPredicate] ) :
+    def MatchesDictionaryIterator ( self, predicateDict: Dict[ str, SearchPredicate ] ) :
         return self._searchIterator2( predicateDict )
 
     def _searchIterator2 ( self, predicateDict: Dict[ str, SearchPredicate] ) :

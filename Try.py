@@ -1,27 +1,15 @@
-from pathlib import Path
-
-from Xml.XmlAccess import Accessor
-from Xml.Predicates import *
 from Xml.Languages import *
 
 
 path = Path( __file__ ).parent / 'Data'
-fileName = 'sample.txt'
+inputFileName = 'sample.txt'
+inputFile = path / inputFileName
+TEFileName = 'EDump.txt'
+TFFileName = 'FDump.txt'
+TGFileName = 'GDump.txt'
+outputFiles = { 'E': path / TEFileName, 'F' : path / TFFileName, 'G' : path / TGFileName }
+predicate = Predicates.TagRegex( 'csn', 'W\d{4}/\d{2}')
 
-accessor = Accessor( path / fileName )
 
-
-tCasePredicate = TagRegex( 'csn', 'T\d{4}/\d{2}' )
-unknownLanguagePredicate = Not( Or( IsEnglish(), Or( IsFrench(), IsGerman() ) ) )
-
-
-predicate = tCasePredicate
-
-result = accessor.MatchesAndMismatchesCount( predicate )
-print( result )
-
-result = accessor.MatchesAndMismatchesIterator( { 'en': IsEnglish(), 'fr': IsFrench(), 'de': IsGerman(), 'T' : tCasePredicate } )
-for x in result :
-    for (label, decision) in x.items() :
-        print( f'{label}:    {decision.GetTag( "csn" )}' )
-
+splitter = LanguageSplitter ( inputFile, outputFiles )
+splitter.SplitFile( predicate )

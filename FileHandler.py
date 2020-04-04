@@ -31,7 +31,6 @@ def WriteDecision ( decision: Decision, file: TextIO ) :
 class FileHandler( ABC ) :
 
     def __init__ ( self, file: Path, mode: str, encoding: str ) :
-        from os import PathLike
         self._file = file
         self._mode = mode
         self._encoding = encoding
@@ -81,3 +80,17 @@ class FileWriter( FileHandler ) :
 
     def WriteDecision ( self, decision: Decision ) :
         WriteDecision( decision, self._handle )
+
+
+from typing import Mapping
+class MultipleFileWriter :
+
+    def __init__ ( self, files : Mapping[ str, Path ], encoding='utf_8' ) :
+        self._files = files
+        self._encoding = encoding
+        # self._writers = { key : FileWriter( file, encoding ) for (key, file) in files }
+
+    def WriteDecision ( self, key : str,  decision: Decision ) :
+        if key in self._files :
+            with FileWriter ( self._files[ key ], self._encoding ) as writer :
+                writer.WriteDecision( decision )
