@@ -1,6 +1,6 @@
 from abc import ABC
 from pathlib import Path
-from typing import TextIO
+from typing import TextIO, Mapping
 
 from Xml.Decision import Decision
 
@@ -34,14 +34,26 @@ class FileHandler( ABC ) :
         self._file = file
         self._mode = mode
         self._encoding = encoding
+        self._handle = None
 
     def __enter__ ( self ) :
-        # noinspection PyTypeChecker
-        self._handle = open( self._file, self._mode, encoding=self._encoding )
+        if not self._fileIsOpen() :
+            # noinspection PyTypeChecker
+            self._handle = open( self._file, self._mode, encoding=self._encoding )
+
 
     def __exit__ ( self, exceptionType, exceptionValue, exceptionTraceback ) :
-        if self._handle :
+        if self._handle is not None :
             self._handle.close()
+            self._handle = None
+
+
+    def _fileIsOpen ( self ) :
+        return self._handle is not None
+
+
+
+
 
 
 class FileReader( FileHandler ) :
@@ -53,20 +65,27 @@ class FileReader( FileHandler ) :
         super().__enter__()
         return self
 
-    def MoveToTag ( self, tag: str ) :
-        return MoveToTag( tag, self._handle )
-
-    def ReadToTag ( self, tag: str ) :
-        return ReadToTag( tag, self._handle )
-
     def ReadFromTo ( self, startTag: str, endTag: str ) :
-        if self.MoveToTag( startTag ) :
-            return self.ReadToTag( endTag )
+        if not self._fileIsOpen() : raise self.FileReaderError( 'Please use with ... as ... ' )
+        if self._moveToTag( startTag ) :
+            return self._readToTag( endTag )
         return ''
 
     def IterateFromTo ( self, startTag: str, endTag: str ) :
-        while self.MoveToTag( startTag ) :
-            yield self.ReadToTag( endTag )
+        if not self._fileIsOpen() : raise self.FileReaderError( 'Please use with ... as ... ' )
+        while self._moveToTag( startTag ) :
+            yield self._readToTag( endTag )
+
+
+    def _moveToTag ( self, tag: str ) :
+        return MoveToTag( tag, self._handle )
+
+    def _readToTag ( self, tag: str ) :
+        return ReadToTag( tag, self._handle )
+
+    class FileReaderError( Exception ) : ...
+
+
 
 
 class FileWriter( FileHandler ) :
@@ -79,18 +98,22 @@ class FileWriter( FileHandler ) :
         return self
 
     def WriteDecision ( self, decision: Decision ) :
-        WriteDecision( decision, self._handle )
+        if self._fileIsOpen() :
+            WriteDecision( decision, self._handle )
+        else :
+            with self : self.WriteDecision( decision )
 
 
-from typing import Mapping
+
 class MultipleFileWriter :
 
-    def __init__ ( self, files : Mapping[ str, Path ], encoding='utf_8' ) :
+    def __init__ ( self, files: Mapping[ str, Path ], encoding='utf_8' ) :
         self._files = files
         self._encoding = encoding
         # self._writers = { key : FileWriter( file, encoding ) for (key, file) in files }
 
-    def WriteDecision ( self, key : str,  decision: Decision ) :
+    def WriteDecision ( self, key: str, decision: Decision ) :
         if key in self._files :
-            with FileWriter ( self._files[ key ], self._encoding ) as writer :
+            with FileWriter( self._files[ key ], self._encoding ) as writer :
                 writer.WriteDecision( decision )
+
